@@ -5,36 +5,48 @@
 {% include "includes/cart_button.html" %}
 {% endblock modal_cart %}
 
+{% block filters %}{% endblock %}
+
 {% block content %}
 
-<div class="container mt-5 ms-5">
-    <div class="card mb-4 custom-shadow ms-5 ps-3 pt-3 pe-3 pb-3" style="border: 2px solid #096740">
-        <div class="row">
+<div class="container mb-5">
+    <div class="mb-3 mt-3 d-flex justify-content-center">
+        <a href="{% url 'catalog:index' 'all' %}" class="btn btn-reset-back align-items-center">
+            <i class="bi bi-arrow-left-circle"></i> Back to Catalog
+        </a>
+    </div>
+    <div class="card mb-5 custom-shadow ps-3 pt-3 pe-3 pb-3" style="border: 2px solid #096740">
+        <div class="row align-items-stretch">
+            
             <div class="col-md-4">
                 <img src="{{ product.image.url }}" 
-                    class="img-fluid img-thumbnail" 
-                    data-bs-toggle="modal" data-bs-target="#imageModal1" 
-                    style="max-width: 100%; height: auto;">
+                     class="img-fluid img-thumbnail" 
+                     data-bs-toggle="modal" data-bs-target="#imageModal1" 
+                     style="width: 100%; height: auto; object-fit: cover;">
             </div>
-            <div class="col-md-8">
-                <div class="card-body text-center" style="color: #402b2b;">
+    
+            <div class="col-md-8 d-flex align-items-center justify-content-center">
+                <div class="card-body text-center fs-5" style="color: #402b2b; width: 100%;">
                     <p class="card-text mt-3">Price: <strong>{{ product.sell_price }} UAH</strong></p>
                     <h5 class="card-title">{{ product.name }}</h5>
                     <p class="card-text">{{ product.description }}</p>
                     <p class="product_id mt-3">id: {{ product.display_id }}</p>
+                    
                     <form action="{% url 'carts:cart_add' %}" method="post" class="d-inline">
+                        {% csrf_token %}
                         <input type="hidden" name="product_id" value="{{ product.id }}">                    
                         <button type="button" class="btn dropdown-toggle add-to-cart align-items-center fs-5"
-                        data-product-id="{{ product.id }}" style="width: 160px; height: 50px;">
+                                data-product-id="{{ product.id }}" style="width: 160px; height: 50px;">
                             Add to cart
                             <img class="mx-1" src="{% static 'deps/icons/cart-main.svg' %}" 
-                                alt="Catalog Icon" width="28" height="28">
+                                 alt="Catalog Icon" width="28" height="28">
                         </button>
-                    {% csrf_token %}
                     </form>
                 </div>
             </div>
+    
         </div>
     </div>
 </div>
+
 {% endblock content %}

@@ -1,18 +1,22 @@
-#python stuff
+# Python & Environment
 venv/
-__pycache__/
-cache/
-**__init__.py/
-
-#ide stuff
-.vscode
-.idea/
 .env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-#django stuff
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Django Specific
 db.sqlite3
-media/
+app_logs.log
+*.log
+static/staticfiles/
+cache/
 
-# Migrations
-**/migrations/*.py
-!**/migrations/__init__.py
+media/

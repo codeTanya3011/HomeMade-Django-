@@ -6,142 +6,96 @@ from django.forms import ValidationError
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import FormView
+import re
 
 from carts.models import Cart
-
 from orders.forms import CreateOrderForm
 from orders.models import Order, OrderItem
 
 
 class CreateOrderView(LoginRequiredMixin, FormView):
-    template_name = 'orders/create_order.html'
+    template_name = "orders/create_order.html"
     form_class = CreateOrderForm
-    success_url = reverse_lazy('users:profile')
+    success_url = reverse_lazy("users:profile")
 
     def get_initial(self):
         initial = super().get_initial()
-        initial['first_name'] = self.request.user.first_name
-        initial['last_name'] = self.request.user.last_name
+
+        initial["first_name"] = self.request.user.first_name
+        initial["last_name"] = self.request.user.last_name
+
+        initial["phone_number"] = self.request.user.phone_number
         return initial
 
     def form_valid(self, form):
+        user = self.request.user
+        cart_items = Cart.objects.filter(user=user)
+
+        if not cart_items.exists():
+            messages.error(
+                self.request,
+                "Your cart is empty. Please add items before placing an order.",
+            )
+            return self.render_to_response(self.get_context_data(form=form))
+
+        phone_raw = form.cleaned_data.get("phone_number", "")
+        phone_clean = re.sub(r"\D", "", str(phone_raw or ""))
+
+        if len(phone_clean) < 7:
+            messages.error(self.request, "Phone number must contain at least 7 digits.")
+            return self.render_to_response(self.get_context_data(form=form))
+
         try:
             with transaction.atomic():
-                user = self.request.user
-                cart_items = Cart.objects.filter(user=user)
 
-                if cart_items.exists():
-                    # Створити замовлення
-                    order = Order.objects.create(
-                        user=user,
-                        phone_number=form.cleaned_data['phone_number'],
-                        requires_delivery=form.cleaned_data['requires_delivery'],
-                        delivery_address=form.cleaned_data['delivery_address'],
-                        payment_on_get=form.cleaned_data['payment_on_get'],
-                    )
-                    for cart_item in cart_items:
-                        product=cart_item.product
-                        name=cart_item.product.name
-                        price=cart_item.product.sell_price()
-                        quantity=cart_item.quantity
+                order = Order.objects.create(
+                    user=user,
+                    phone_number=phone_clean,
+                    requires_delivery=form.cleaned_data.get("requires_delivery", False),
+                    delivery_address=form.cleaned_data.get("delivery_address", ""),
+                    payment_on_get=form.cleaned_data.get("payment_on_get", False),
+                )
 
+                if not user.phone_number:
+                    user.phone_number = phone_clean
+                    user.save()
 
-                        if product.quantity < quantity:
-                            raise ValidationError(f'Insufficient quantity of goods {name} in stock\
-                                                       In stock - {product.quantity}')
+                for cart_item in cart_items:
+                    product = cart_item.product
+                    if product.quantity < cart_item.quantity:
 
-                        OrderItem.objects.create(
-                            order=order,
-                            product=product,
-                            name=name,
-                            price=price,
-                            quantity=quantity,
+                        raise ValidationError(
+                            f'Insufficient quantity of "{product.name}" in stock.'
                         )
-                        product.quantity -= quantity
-                        product.save()
 
-                    # Очистити кошик користувача після створення замовлення
-                    cart_items.delete()
+                    OrderItem.objects.create(
+                        order=order,
+                        product=product,
+                        name=product.name,
+                        price=product.sell_price(),
+                        quantity=cart_item.quantity,
+                    )
 
-                    messages.success(self.request, 'The order has been placed!')
-                    return redirect('user:profile')
+                    product.quantity -= cart_item.quantity
+                    product.save()
+
+                cart_items.delete()
+
+            messages.success(self.request, "The order has been placed successfully!")
+            return redirect(self.get_success_url())
+
         except ValidationError as e:
-            messages.success(self.request, str(e))
-            return redirect('orders:create_order')
-        
-    
+            messages.error(self.request, str(e))
+            return self.render_to_response(self.get_context_data(form=form))
+        except Exception as e:
+            messages.error(self.request, f"Something went wrong: {str(e)}")
+            return self.render_to_response(self.get_context_data(form=form))
+
     def form_invalid(self, form):
-        messages.error(self.request, 'Please fill in all required fields!')
-        return redirect('orders:create_order')
-    
+        return self.render_to_response(self.get_context_data(form=form))
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Placing an order'
-        context['order'] = True
+        context["title"] = "Placing an order"
+        context["order"] = True
         return context
-
-
-
-
-
-# @login_required
-# def create_order(request):
-#     if request.method == 'POST':
-#         form = CreateOrderForm(data=request.POST)
-#         if form.is_valid():
-#             try:
-#                 with transaction.atomic():
-#                     user = request.user
-#                     cart_items = Cart.objects.filter(user=user)
-
-#                     if cart_items.exists():
-
-#                         order = Order.objects.create(
-#                             user=user,
-#                             phone_number=form.cleaned_data['phone_number'],
-#                             requires_delivery=form.cleaned_data['requires_delivery'],
-#                             delivery_address=form.cleaned_data['delivery_address'],
-#                             payment_on_get=form.cleaned_data['payment_on_get'],
-#                         )
-
-#                         for cart_item in cart_items:
-#                             product=cart_item.product
-#                             name=cart_item.product.name
-#                             price=cart_item.product.sell_price()
-#                             quantity=cart_item.quantity
-
-#                             if product.quantity < quantity:
-#                                 raise ValidationError(f'Не має {name} на складі\
-#                                                        В кількості - {product.quantity}')
-
-#                             OrderItem.objects.create(
-#                                 order=order,
-#                                 product=product,
-#                                 name=name,
-#                                 price=price,
-#                                 quantity=quantity,
-#                             )
-#                             product.quantity -= quantity
-#                             product.save()
-
-#                         cart_items.delete()
-
-#                         messages.success(request, '')
-#                         return redirect('user:profile')
-#             except ValidationError as e:
-#                 messages.success(request, str(e))
-#                 return redirect('orders:create_order')
-#     else:
-#         initial = {
-#             'first_name': request.user.first_name,
-#             'last_name': request.user.last_name,
-#             }
-
-#         form = CreateOrderForm(initial=initial)
-
-#     context = {
-#         'title': '',
-#         'form': form,
-#         'order': True,
-#     }
-#     return render(request, 'orders/create_order.html', context=context)

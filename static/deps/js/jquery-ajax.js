@@ -1,4 +1,4 @@
-// Додавання до кошика
+// adding to cart
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".add-to-cart").forEach(button => {
         button.addEventListener("click", function (event) {
@@ -21,33 +21,33 @@ document.addEventListener("DOMContentLoaded", function () {
                     "X-Requested-With": "XMLHttpRequest"
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Server response:", data);
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Server response:", data);
 
-                if (data.success) {
-                    let cartCounter = document.querySelector("#goods-in-cart-count");
-                    if (cartCounter) {
-                        cartCounter.textContent = data.total_quantity || 0;
+                    if (data.success) {
+                        let cartCounter = document.querySelector("#goods-in-cart-count");
+                        if (cartCounter) {
+                            cartCounter.textContent = data.total_quantity || 0;
+                        }
+
+                        let cartContainer = document.querySelector("#cart-container");
+                        if (cartContainer) {
+                            cartContainer.innerHTML = data.cart_items_html;
+                        }
+
+                        showSuccessNotification("Product added to cart!");
+                    } else {
+                        showErrorNotification(data.message || "❌ Error adding product!");
                     }
-
-                    let cartContainer = document.querySelector("#cart-container");
-                    if (cartContainer) {
-                        cartContainer.innerHTML = data.cart_items_html;
-                    }
-
-                    showSuccessNotification("Product added to cart!");
-                } else {
-                    showErrorNotification(data.message || "❌ Error adding product!");
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                showErrorNotification("❌ Server error! Try again");
-            })
-            .finally(() => {
-                setTimeout(() => button.classList.remove("processing"), 500);
-            });
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    showErrorNotification("❌ Server error! Try again");
+                })
+                .finally(() => {
+                    setTimeout(() => button.classList.remove("processing"), 500);
+                });
         });
     });
 });
@@ -64,22 +64,23 @@ function updateCart(cartID, quantity, url) {
         success: function (data) {
             $("#goods-in-cart-count").text(data.total_quantity || 0);
             $("#cart-items-container").html(data.cart_items_html);
-            $("#total-cart-price").text(data.total_price + " UAH");
+
+            let price = data.total_price !== undefined ? data.total_price : "0,00";
+            $("#total-cart-price").text(price + " UAH");
         },
         error: function () {
-            console.log("Error updating cart");
+            showErrorNotification("Washing for a new cat");
         },
     });
 }
 
+// removing goods from the basket
 $(document).on("click", ".remove-from-cart", function (e) {
     e.preventDefault();
 
     var cart_id = $(this).data("cart-id");
     var remove_from_cart = $(this).data("remove-url");
     var cartItemElement = $(this).closest(".cart-item");
-
-    console.log("Removing an item from the cart, ID:", cart_id);
 
     $.ajax({
         type: "POST",
@@ -89,63 +90,71 @@ $(document).on("click", ".remove-from-cart", function (e) {
             csrfmiddlewaretoken: $("[name=csrfmiddlewaretoken]").val(),
         },
         success: function (data) {
-            console.log("The product has been successfully removed:", data.message);
+            $("#goods-in-cart-count").text(data.total_quantity || 0);
 
-            // Оновлюємо кількість товарів в корзині
-            var goodsInCartCount = $("#goods-in-cart-count");
-            var cartCount = parseInt(goodsInCartCount.text() || 0);
-            cartCount -= data.quantity_deleted;  // Зменшуємо
-            goodsInCartCount.text(cartCount);
-
-            // Видалення
             cartItemElement.fadeOut(300, function () {
                 $(this).remove();
             });
 
             $("#cart-items-container").html(data.cart_items_html);
 
-            // Показ повідомлення про успішне видалення товару
+            if (data.total_price !== undefined) {
+                $("#total-cart-price").text(data.total_price + " UAH");
+            }
+
             showSuccessNotification("The product has been removed from the cart!");
         },
         error: function () {
-            console.error("Error while deleting item from cart");
             showErrorNotification("❌ Error! Failed to delete item");
         }
     });
 });
 
-// Смс
+// types message
+function alert_notification(message, type) {
+    $("#jq-notification").remove();
+
+    let $notify = $('<div id="jq-notification"></div>').appendTo('body');
+
+    $notify.css({
+        "position": "fixed",
+        "top": "50%",
+        "left": "50%",
+        "transform": "translate(-50%, -50%)",
+        "z-index": "99999", 
+        "padding": "20px 30px",
+        "border-radius": "5px", 
+        "text-align": "center",
+        "font-size": "18px",
+        "font-weight": "bold",
+        "min-width": "280px",
+        "box-shadow": "0 10px 25px rgba(0,0,0,0.2)", 
+        "display": "none"
+    });
+
+    if (type === "success") {
+        $notify.css({ "background-color": "#bce5d5", "color": "#043724", "border": "1px solid #096740" });
+    } else {
+        $notify.css({ "background-color": "#f8d7da", "color": "#721c24", "border": "1px solid #f5c6cb" });
+    }
+
+    $notify.text(message);
+
+    $notify.fadeIn(300).delay(2000).fadeOut(400, function () {
+        $(this).remove();
+    });
+}
+
+// Shortcut functions
 function showSuccessNotification(message) {
-    let notification = $("#jq-notification");
-
-    if (notification.length === 0) {
-        $("body").append('<div id="jq-notification" class="alert alert-success custom-shadow"></div>');
-        notification = $("#jq-notification");
-    }
-
-    notification.text(message);
-    notification.css({
-        display: "block",
-        opacity: 1
-    }).fadeIn(400).delay(3000).fadeOut(400);
+    alert_notification(message, "success");
 }
 
-// Помилка
 function showErrorNotification(message) {
-    let notification = $("#jq-notification");
-
-    if (notification.length === 0) {
-        $("body").append('<div id="jq-notification" class="alert alert-danger custom-shadow"></div>');
-        notification = $("#jq-notification");
-    }
-
-    notification.text(message);
-    notification.css({
-        display: "block",
-        opacity: 1
-    }).fadeIn(400).delay(3000).fadeOut(400);
+    alert_notification(message, "error");
 }
 
+// + goods
 $(document).on("click", ".decrement", function () {
     var url = $(this).data("cart-change-url");
     var cartID = $(this).data("cart-id");
@@ -158,7 +167,7 @@ $(document).on("click", ".decrement", function () {
         updateCart(cartID, newQuantity, -1, url, $(this));
     }
 });
-
+// - goods
 $(document).on("click", ".increment", function () {
     var url = $(this).data("cart-change-url");
     var cartID = $(this).data("cart-id");
@@ -170,6 +179,7 @@ $(document).on("click", ".increment", function () {
     updateCart(cartID, newQuantity, 1, url, $(this));
 });
 
+ // Update the goods
 function updateCart(cartID, quantity, change, url, button) {
     $.ajax({
         type: "POST",
@@ -179,43 +189,38 @@ function updateCart(cartID, quantity, change, url, button) {
             quantity: quantity,
             csrfmiddlewaretoken: $("[name=csrfmiddlewaretoken]").val(),
         },
-        
+
         success: function (data) {
-            // Update the success message
             var successMessage = $("#success-message");
             successMessage.html(data.message).fadeIn(400);
             setTimeout(function () {
                 successMessage.fadeOut(400);
             }, 7000);
-        
-            // Update the goods count in the cart
+
             var goodsInCartCount = $("#goods-in-cart-count");
             var cartCount = parseInt(goodsInCartCount.text() || 0);
             cartCount += change;
             goodsInCartCount.text(cartCount);
 
-            // Update the price of the product in the cart
             var productPriceElem = button.closest(".list-group-item").find(".cart-item-price");
             if (data.cart_price !== undefined) {
                 productPriceElem.text(`Price: ${data.cart_price} UAH`);
             }
 
-            // Update the total price of the cart
             $(".card-footer h4 strong").text(`${data.total_price} UAH`);
 
-            // Update the total quantity of items
             $("#total-quantity").text(data.total_quantity);
 
-            // Update the individual item total price
             var productTotalElem = button.closest(".list-group-item").find(".cart-item-total-price");
             productTotalElem.text(`${data.product_total_price} UAH`);
         },
         error: function () {
-            console.log("Error updating cart");           
+            console.log("Error updating cart");
         },
     });
 }
 
+// delivery notification
 var notification = $('#notification');
 if (notification.length > 0) {
     setTimeout(function () {
@@ -223,202 +228,99 @@ if (notification.length > 0) {
     }, 7000);
 }
 
-    $('#modalButton').click(function () {
-        $('#exampleModal').appendTo('body');
+$('#modalButton').click(function () {
+    $('#exampleModal').appendTo('body');
 
-        $('#exampleModal').modal('show');
-    });
+    $('#exampleModal').modal('show');
+});
 
-    $('#exampleModal .btn-close').click(function () {
-        $('#exampleModal').modal('hide');
-    });
+$('#exampleModal .btn-close').click(function () {
+    $('#exampleModal').modal('hide');
+});
 
-    $("input[name='requires_delivery']").change(function () {
-        var selectedValue = $(this).val();
+$("input[name='requires_delivery']").change(function () {
+    var selectedValue = $(this).val();
 
-        if (selectedValue === "1") {
-            $("#deliveryAddressField").show();
-        } else {
-            $("#deliveryAddressField").hide();
+    if (selectedValue === "1") {
+        $("#deliveryAddressField").show();
+    } else {
+        $("#deliveryAddressField").hide();
+    }
+});
+
+// phone number notification
+document.getElementById('id_phone_number').addEventListener('input', function (e) {
+    var x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+    e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+});
+
+$('#create_order_form').on('submit', function (event) {
+    var phoneNumber = $('#id_phone_number').val();
+    var regex = /^\(\d{3}\) \d{3}-\d{4}$/;
+
+    if (!regex.test(phoneNumber)) {
+        $('#phone_number_error').show();
+        event.preventDefault();
+    } else {
+        $('#phone_number_error').hide();
+
+        var cleanedPhoneNumber = phoneNumber.replace(/[()\-\s]/g, '');
+        $('#id_phone_number').val(cleanedPhoneNumber);
+    }
+});
+
+$(document).ready(function () {
+    $(document).on('submit', '#search-form', function (e) {
+
+        let query = $(this).find('input[name="q"]').val().trim();
+
+        if (query === "") {
+            e.preventDefault(); 
+            showErrorNotification("Please enter a search query!");
+
+            return false;
         }
     });
+});
 
-    document.getElementById('id_phone_number').addEventListener('input', function (e) {
-        var x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
-        e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
-    });
+// login + photo notification
+function createSocialNotify(provider) {
+    const message = provider + " login will be available soon!";
 
-    $('#create_order_form').on('submit', function (event) {
-        var phoneNumber = $('#id_phone_number').val();
-        var regex = /^\(\d{3}\) \d{3}-\d{4}$/;
+    const notifyHtml = `
+        <div id="temp-notify" class="alert alert-success alert-dismissible fade show custom-shadow" 
+                role="alert"
+                style="position: fixed; 
+                    top: 85px; 
+                    left: 50%; 
+                    transform: translateX(-50%); 
+                    z-index: 1000; 
+                    min-width: 320px; 
+                    text-align: center; 
+                    border-radius: 5px;
+                    background-color: #d1e7dd; 
+                    border: 1px solid #badbcc; 
+                    color: #0f5132;">
+            <strong class="me-2">${message}</strong> 
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>`;
 
-        if (!regex.test(phoneNumber)) {
-            $('#phone_number_error').show();
-            event.preventDefault();
-        } else {
-            $('#phone_number_error').hide();
+    const oldNotify = document.getElementById('temp-notify');
+    if (oldNotify) oldNotify.remove();
 
-            var cleanedPhoneNumber = phoneNumber.replace(/[()\-\s]/g, '');
-            $('#id_phone_number').val(cleanedPhoneNumber);
+    document.body.insertAdjacentHTML('afterbegin', notifyHtml);
+
+    setTimeout(() => {
+        const alert = document.getElementById('temp-notify');
+        if (alert) {
+            alert.style.opacity = '0';
+            alert.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => alert.remove(), 500);
         }
-    });
+    }, 3000);
+}
 
-
-
-
-
-//     function showNotification(message, type = "success") {
-//         let notification = document.getElementById("jq-notification");
-    
-//         if (!notification) {
-//             console.error("Елемент #jq-notification не знайдено!");
-//             return;
-//         }
-//         notification.classList.remove("fade-out");
-//         notification.style.visibility = "visible";
-//         notification.style.opacity = "1";
-    
-//         if (type === "success") {
-//             notification.style.backgroundColor = "#d1ebe1";
-//             notification.style.color = "#043724";
-//             notification.style.border = "1px solid #8ec1ab";
-//         } else if (type === "error") {
-//             notification.style.backgroundColor = "#f8d7da";
-//             notification.style.color = "#721c24";
-//             notification.style.border = "1px solid #f5c6cb";
-//         }
-//         notification.innerHTML = message;
-//         notification.classList.add("fade-in");
-    
-//         setTimeout(() => {
-//             notification.classList.remove("fade-in");
-//             notification.classList.add("fade-out");
-    
-//             setTimeout(() => {
-//                 notification.style.visibility = "hidden";
-//                 notification.style.opacity = "0";
-//             }, 500);
-//         }, 4000);
-//     }
-//     function showSuccessNotification(message) {
-//         showNotification(message, "success");
-//     }
-//     function showErrorNotification(message) {
-//         showNotification(message, "error");
-//     }
-
-// document.addEventListener("DOMContentLoaded", function () {
-//     document.addEventListener("click", function (event) {
-//         let button = event.target.closest(".add-to-cart");
-//         if (!button) return;
-
-//         event.preventDefault();
-//         button.disabled = true; 
-
-//         let form = button.closest("form");
-//         let formData = new FormData(form);
-
-//         fetch(form.action, {
-//             method: "POST",
-//             body: formData,
-//             headers: {
-//                 "X-Requested-With": "XMLHttpRequest"
-//             }
-//         })
-//         .then(response => response.json())
-//         .then(data => {
-//             console.log("Server response:", data);
-
-//             if (data.success) {
-//                 let cartCounter = document.querySelector("#goods-in-cart-count");
-//                 if (cartCounter) {
-//                     cartCounter.textContent = data.total_quantity || 0;
-//                 }
-
-//                 let cartContainer = document.querySelector("#cart-container");
-//                 if (cartContainer) {
-//                     cartContainer.innerHTML = data.cart_items_html;
-//                 }
-
-//                 showSuccessNotification("Product added to cart!");
-//             } else {
-//                 showErrorNotification(data.message || "❌ Error adding product!");
-//             }
-//         })
-//         .catch(error => {
-//             console.error("Error:", error);
-//             showErrorNotification("❌ Server error! Try again");
-//         })
-//         .finally(() => {
-//             button.disabled = false;
-//         });
-//     });
-// });
-
-// function updateCartCount(newQuantity) {
-//     let goodsInCartCount = document.getElementById("goods-in-cart-count");
-//     if (goodsInCartCount) {
-//         goodsInCartCount.textContent = newQuantity;
-//     }
-// }
-
-// // Повідомлення
-// function showSuccessNotification(message) {
-//     let notification = document.getElementById("jq-notification");
-
-//     if (notification) {
-//         notification.innerHTML = message;
-//         notification.style.display = "block";
-//         notification.classList.add("fade-in");
-
-//         setTimeout(() => {
-//             notification.classList.remove("fade-in");
-//             notification.classList.add("fade-out");
-
-//             setTimeout(() => {
-//                 notification.style.display = "none";
-//                 notification.classList.remove("fade-out");
-//             }, 500);
-//         }, 4000);
-//     }
-// }
-
-// function updateCart(cartID, quantity, change, url) {
-//     $.ajax({
-//         type: "POST",
-//         url: url,
-//         data: {
-//             cart_id: cartID,
-//             quantity: quantity,
-//             csrfmiddlewaretoken: $("[name=csrfmiddlewaretoken]").val(),
-//         },
-
-//         success: function (data) {
-//             console.log("Updated Cart:", data);
-
-//             // Уведомление о смене количества
-//             successMessage.html(data.message);
-//             successMessage.fadeIn(400);
-//             setTimeout(function () {
-//                 successMessage.fadeOut(400);
-//             }, 7000);
-
-//             // Обновляем количество товара
-//             var goodsInCartCount = $("#goods-in-cart-count");
-//             goodsInCartCount.text(data.total_quantity);
-
-//             // Обновляем общую сумму корзины
-//             $("#cart-total-price").text(data.total_price + " UAH");
-
-//             // Обновляем цену конкретного товара
-//             let cartItem = $(`[data-cart-id='${cartID}']`).closest(".list-group-item");
-//             cartItem.find(".product-price").text(data.product_price + " UAH");
-
-//             // Перерисовываем корзину
-//             $("#cart-items-container").html(data.cart_items_html);
-//         },
-//         error: function (data) {
-//             console.log("Error updating cart");
-//         },
-//     });
-// }
+document.getElementById('id_image').addEventListener('change', function () {
+    const fileName = this.files[0] ? this.files[0].name : "No file chosen";
+    document.getElementById('file-name').textContent = fileName;
+});

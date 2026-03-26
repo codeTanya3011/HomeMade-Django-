@@ -2,143 +2,177 @@
 {% load static %}
 {% load goods_tags %}
 
+{% block catalog_button %}
+
+<div class="dropdown d-inline-block">
+    <button class="btn dropdown-toggle position-relative ms-3 fs-5" 
+            data-bs-toggle="dropdown" 
+            style="width: 130px; height: 50px;">
+        Catalog
+        <img class="catalog_item mx-1" src="{% static 'deps/icons/menu-catalog.svg' %}" width="28" height="28">
+    </button>
+    <ul class="dropdown-menu">
+        {% tag_categories as categories %}
+        {% for category in categories %} 
+            <li>
+                <a class="dropdown-item" href="{% url 'catalog:index' category.slug %}">
+                    {{ category.name }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% endblock %}
+
 {% block modal_cart %}
 {% include "includes/cart_button.html" %}
 {% endblock modal_cart %}
 
-{% block content %}
+{% block filters %}
 
-<div class="container row position-relative" style="z-index: 1050;">
-    <div class="dropdown d-flex justify-content-end mb-2 mt-3">
+    <div class="dropdown">
         <button class="btn dropdown-toggle fs-5" type="button" data-bs-toggle="dropdown" 
                 aria-expanded="false" style="width: 130px; height: 50px;">
             Filters
-            <img class="catalog_item mx-1" src="{% static 'deps/icons/filters.svg' %}" alt="Catalog Icon"
-                 width="28" height="28">
+            <img class="catalog_item ms-1" src="{% static 'deps/icons/filters.svg' %}" alt="Filters" width="28" height="28">
         </button>
-        <div class="dropdown-menu custom-dropdown" style='color: #c3b2b2;'>
+
+        <div class="dropdown-menu dropdown-menu-end custom-dropdown shadow" style="color: #c3b2b2; min-width: 250px;">
             <form action="{% if request.GET.q %}{% url 'catalog:search' %}{% else %}{% url 'catalog:index' slug_url %}{% endif %}" 
-                  method="get" class="px-3 py-2">
+                method="get" class="px-3 py-2">
+                
                 <div class="form-check custom-checkbox">
-                    <input class="form-check-input" type="checkbox" name="on_sale" id="flexCheckDefault" value="on" 
-                           {% if request.GET.on_sale == 'on' %}checked{% endif %}>  
-                    {% if request.GET.q %}
-                        <input type="hidden" name="q" value="{{ request.GET.q }}">
-                    {% endif %}
-                    <label class="form-check-label" for="flexCheckDefault">
-                        Products on sale
-                    </label>
+                    <input class="form-check-input" type="checkbox" name="on_sale" id="flexCheckDefault" value="on"
+                        {% if request.GET.on_sale == 'on' %}checked="checked"{% endif %}>
+                    <label class="form-check-label" for="flexCheckDefault">Products on sale</label>
                 </div>
+
+                {% if request.GET.q %}
+                    <input type="hidden" name="q" value="{{ request.GET.q }}">
+                {% endif %}
+
                 <p class="mt-3 text-center">Sort:</p>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="order_by" id="flexRadioDefault1" value="default"
-                           {% if not request.GET.order_by or request.GET.order_by == 'default' %}checked{% endif %}>
-                    <label class="form-check-label" for="flexRadioDefault1">
-                        Default
-                    </label>
+                        {% if not request.GET.order_by or request.GET.order_by == 'default' %}checked{% endif %}>
+                    <label class="form-check-label" for="flexRadioDefault1">Default</label>
                 </div>
+                
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="order_by" id="flexRadioDefault2" value="price"
-                           {% if request.GET.order_by == 'price' %}checked{% endif %}>
-                    <label class="form-check-label" for="flexRadioDefault2">
-                        From cheap to expensive
-                    </label>
+                        {% if request.GET.order_by == 'price' %}checked{% endif %}>
+                    <label class="form-check-label" for="flexRadioDefault2">Cheap to expensive</label>
                 </div>
-                <div class="form-check">
+
+                <div class="form-check mb-2">
                     <input class="form-check-input" type="radio" name="order_by" id="flexRadioDefault3" value="-price"
-                           {% if request.GET.order_by == '-price' %}checked{% endif %}>
-                    <label class="form-check-label" for="flexRadioDefault3">
-                        From expensive to cheap
-                    </label>
+                        {% if request.GET.order_by == '-price' %}checked{% endif %}>
+                    <label class="form-check-label" for="flexRadioDefault3">Expensive to cheap</label>
                 </div>
-                <button type="submit" class="btn btn-outline-secondary mt-3 w-100" style="color: #c3b2b2;">
-                    Apply
-                    <img class="catalog_item mx-1" src="{% static 'deps/icons/search.svg' %}" alt="Catalog Icon" width="22" height="22">
-                </button>
+                <div class="d-flex justify-content-center w-100 mt-3">
+                    <button type="submit" class="btn btn-outline-success" style="color: #c3b2b2;">
+                        Apply
+                    </button>
+                </div>
             </form>
         </div>
     </div>
-</div>
 
-{% if request.GET.q %}
-<h3 class="mt-4 text-center">Search results for your query {{ request.GET.q }}</h3>
-{% if not goods %}
-    <link rel="stylesheet" href="{% static "deps/css/my_footer_css.css" %}">
-    <h2 class="mt-4">No results found for your search</h2>
-{% endif %}
-{% endif %}
+{% endblock filters %}
 
-<div class="container column position-relative ms-5">
-    <div class="row position-absolute ms-5">
-        {% for product in goods %}
-        <div class="col-md-4 mb-4 text-center p-4">
-            <div class="card border-2 border-success rounded custom-shadow ps-2 pt-2 pe-2 pb-2">
-                {% if product.image %}
-                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
-                {% else %}
-                    <img src="{% static 'deps/images/Not found image.png' %}" class="card-img-top" alt="...">
-                {% endif %}
-                <div class="card-body text-center">
-                    <a href="{% url 'catalog:product' product.slug %}" style="color: #31c783;">
-                        <p class="card-title">
-                            {% autoescape off %}
-                                {% if product.headline %}{{ product.headline }}{% else %}{{ product.name }}{% endif %}
-                            {% endautoescape %}
-                        </p>
-                    </a>
-                <p class="card-text" style="color: #402b2b;">
-                    {% autoescape off %}
-                        {% if product.bodyline %}{{product.bodyline|truncatechars:50}}{% else %}{{ product.description|truncatechars:50 }}{% endif %}
-                    {% endautoescape %}
-                </p> 
-                <p class="product_id">id: {{ product.display_id }}</p>
-                <div class="d-flex justify-content-between" style="color: #402b2b;">
-                    {% if product.discount %}
-                        <p><s>{{ product.price }}</s> UAH</p>
-                        <p><strong>{{ product.sell_price }}</strong> UAH</p>
-                        <span class="badge bg-custom text-center fs-5">Discount {{ product.discount }} %</span>
+{% block cards %}
+
+    <div class="container">
+        <div class="row justify-content-center">
+            {% for product in goods %}
+            <div class="col-md-4 mt-4" style="max-width: 320px;">
+                <div class="card border-success rounded custom-shadow h-100 p-3">
+                    
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
                     {% else %}
-                        <p><strong>{{ product.price }} UAH</strong></p>
+                        <img src="{% static 'deps/images/Not found image.png' %}" class="card-img-top" alt="...">
                     {% endif %}
-                    <form method="post" action="{% url 'carts:cart_add' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="product_id" value="{{ product.id }}">
-                        <button type="submit" class="btn add-to-cart" data-product-id="{{ product.id }}">
-                            <img class="mx-1" src="{% static 'deps/icons/cart-main.svg' %}" alt="Catalog Icon" width="38" height="38">
-                        </button>
-                    </form>                                      
+    
+                    <div class="card-body text-center d-flex flex-column">
+                        <a href="{% if product.slug %}{% url 'catalog:product' product.slug %}{% else %}#{% endif %}" style="color: #096740; font-size: 1.2rem;">
+                            <p class="card-title fw-bold">
+                                {% if product.headline %}{{ product.headline|safe }}{% else %}{{ product.name }}{% endif %}
+                            </p>
+                        </a>
+                        
+                        <p class="card-text small text-muted flex-grow-1" style="font-size: 1rem; color: #2a1e1e !important;">
+                            {% if product.bodyline %}{{ product.bodyline|safe }}{% else %}{{ product.description|truncatechars:100 }}{% endif %}
+                        </p> 
+    
+                        <p class="product_id small text-secondary mb-1" style="font-size: 1rem; color: #2a1e1e !important;" >id: {{ product.display_id }}</p>
+    
+                        {% if product.discount %}
+                            <div class="mb-2">
+                                <span class="badge bg-success" style="background-color: #85d8a7 !important; font-size: 1.2rem; color: #2a1e1e;">
+                                    Discount -{{ product.discount }}%
+                                </span>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                            <div class="text-start" style="font-size: 1.2rem; color: #2a1e1e;">
+                                {% if product.discount %}
+                                    <p class="mb-0 text-decoration-line-through text-muted small" style="font-size: 0.8rem; color: #2a1e1e;">
+                                        {{ product.price }} UAH
+                                    </p>
+                                    <p class="mb-0 fw-bold">{{ product.sell_price }} UAH</p>
+                                {% else %}
+                                    <p class="mb-0 fw-bold">{{ product.price }} UAH</p>
+                                {% endif %}
+                            </div>
+    
+                            <form method="post" action="{% url 'carts:cart_add' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <button type="submit" class="btn add-to-cart p-0">
+                                    <img src="{% static 'deps/icons/cart-main.svg' %}" alt="Cart" width="38" height="38">
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
     </div>
-{% endfor %}
-    <!-- Пагінація -->
+
     {% if page_obj.paginator.num_pages > 1 %}
     <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-center my-auto mx-auto w-50 p-3">
-            <div class="custom-shadow d-flex mb-3">
-                <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
-                    <a class="page-link" href="{% if page_obj.has_previous %}?q={{ request.GET.q }}&page={{ page_obj.previous_page_number }}{% else %}#{% endif %}">
-                        Back
-                    </a>
-                </li>
-                {% for page in page_obj.paginator.page_range %}
+        <ul class="pagination justify-content-center mt-5">
+            
+            <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                <a class="page-link border-success shadow-sm" 
+                href="{% if page_obj.has_previous %}?{% change_params page=page_obj.previous_page_number %}{% else %}#{% endif %}">
+                    Back
+                </a>
+            </li>
+
+            {% for page in page_obj.paginator.page_range %}
                 {% if page >= page_obj.number|add:-2 and page <= page_obj.number|add:2 %}
-                    <li class="page-item {% if page_obj.number == page %} active {% endif %}">
-                        <a class="page-link" href="?q={{ request.GET.q }}&page={{ page }}">{{ page }}</a>
-                    </li>
-                {% endif %}
-                {% endfor %}
-                <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
-                    <a class="page-link" href="{% if page_obj.has_next %}?q={{ request.GET.q }}&page={{ page_obj.next_page_number }}{% else %}#{% endif %}">
-                        Next
+                <li class="page-item {% if page_obj.number == page %}active{% endif %}">
+                    <a class="page-link border-success shadow-sm"
+                    href="?{% change_params page=page %}">
+                        {{ page }}
                     </a>
                 </li>
-            </div>
+                {% endif %}
+            {% endfor %}
+
+            <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                <a class="page-link border-success shadow-sm"
+                href="{% if page_obj.has_next %}?{% change_params page=page_obj.next_page_number %}{% else %}#{% endif %}">
+                    Next
+                </a>
+            </li>
         </ul>
     </nav>
     {% endif %}
-</div>
-{% endblock content %}
-
-{% block footer %}{% endblock %}
+    
+{% endblock cards %}

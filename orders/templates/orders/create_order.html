@@ -4,108 +4,199 @@
 
 {% block content %}
 
-<div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow">
+<div class=" bg-white p-4 mb-3 mx-2 rounded custom-shadow">
     <div class="container">
-        <h3 class="text-center mb-4">Selected Products</h3>
-        <div class="container" id="cart-items-container">
-
-            {% user_carts request as carts %}
-            {% include "carts/includes/included_cart.html" %}
-
-        </div>
-    </div>
-    <div class="container">
-        <h3 class="text-center">Order details</h3>
+        <h3 class="text-center mb-3">Order details</h3>
         <div class="card mb-3">
             <div class="card-body">
-                <form action="{% url "orders:create_order" %}" method="post" id="create_order_form">
+                <form action="{% url "orders:create_order" %}" method="post" id="create_order_form" novalidate>
                     {% csrf_token %}
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="id_first_name" class="form-label">Name*:</label>
-                            <input type="text" class="form-control" id="id_first_name"
-                            value="{% if form.first_name.value %}{{ form.first_name.value }}{% endif %}"
-                                name="first_name" required>
-                            {% if form.first_name.errors %}
-                                <div class="alert alert-danger alert-dismissible fade show">{{form.first_name.errors}}</div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="id_last_name" class="form-label">Last name*:</label>
-                            <input type="text" class="form-control" id="id_last_name" name="last_name"
-                            value="{% if form.last_name.value %}{{ form.last_name.value }}{% endif %}"
-                            required>
-                            {% if form.last_name.errors %}
-                                <div class="alert alert-danger alert-dismissible fade show">{{form.last_name.errors}}</div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="id_phone_number" class="form-label">Phone number*:</label>
-                            <input type="text" class="form-control" id="id_phone_number" name="phone_number"
-                                value="{% if form.phone_number.value %}{{ form.phone_number.value }}{% endif %}"
-                                placeholder="(000) 000-0000"
-                                required>
-                            {% if form.phone_number.errors %}
-                                <div class="alert alert-danger alert-dismissible fade show">{{form.phone_number.errors}}</div>
-                            {% endif %}
-                            <div class="alert alert-danger alert-dismissible fade show" style="display: none" id="phone_number_error">Invalid number format</div>
-                        </div>
-                        <div class="col-md-12 mb-3">
-                            <label for="delivery" class="form-label">Delivery method: </label>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="requires_delivery"
-                                    id="id_requires_delivery" value="1" checked>
-                                <label class="form-check-label" for="id_requires_delivery">Need
-                                    delivery</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="requires_delivery"
-                                    id="id_requires_delivery" value="0">
-                                <label class="form-check-label" for="id_requires_delivery">Pickup</label>
-                            </div>
-                        </div>
-                        <div class="mb-3" id="deliveryAddressField">
-                            <label for="id_delivery_address" class="form-label">Address
-                                delivery*:</label>
-                            <textarea class="form-control" id="id_delivery_address"
-                                value="{% if form.delivery_address.value %}{{ form.delivery_address.value }}{% endif %}"
-                                name="delivery_address" rows="2"></textarea>
-                            {% if form.delivery_address.errors %}
-                                <div class="alert alert-danger alert-dismissible fade show">{{form.delivery_address.errors}}</div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">Payment method: </label>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="payment_on_get"
-                                    id="id_payment_on_get" value="0" checked>
-                                <label class="form-check-label" for="id_payment_on_get">Payment
-                                    by card</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="payment_on_get"
-                                    id="id_payment_on_get" value="1">
-                                <label class="form-check-label" for="id_payment_on_get">Cash/card
-                                    upon receipt</label>
-                                {% if form.payment_on_get.errors %}
-                                    <div class='alert alert-danger alert-dismissiblefade show'>{{form.delivery_address.errors}}</div>
-                                {% endif %}
-                            </div>
-                        </div>
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
                     </div>
-                    <div class="text-center mb-4">
-                        <button class="btn dropdown-toggle fs-5" 
-                            type="submit" 
-                            aria-expanded="false" 
-                            href="{% url "orders:create_order" %}">
-                            Place an order 
-                            <img class="catalog_item" src="{% static "deps/icons/check-mark.svg" %}" alt="Catalog Icon"
-                            width="28" height="28">
-                        </button>
-                    </div>
+                    {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_first_name" class="form-label">Name*:</label>
+                                <input type="text" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
+                                       id="id_first_name"
+                                       name="first_name"
+                                       value="{{ form.first_name.value|default_if_none:'' }}"
+                                       required>
+                                {% for error in form.first_name.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_last_name" class="form-label">Last name*:</label>
+                                <input type="text" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
+                                       id="id_last_name"
+                                       name="last_name"
+                                       value="{{ form.last_name.value|default_if_none:'' }}"
+                                       required>
+                                {% for error in form.last_name.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_phone_number" class="form-label">Phone number*:</label>
+                                <input type="text" class="form-control {% if form.phone_number.errors %}is-invalid{% endif %}" 
+                                       id="id_phone_number"
+                                       name="phone_number"
+                                       value="{{ form.phone_number.value|default_if_none:'' }}"
+                                       placeholder="(000) 000-0000"
+                                       required>
+                                {% for error in form.phone_number.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                    
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Delivery method*: </label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="requires_delivery"
+                                           id="delivery_yes" value="1" {% if form.requires_delivery.value == "1" %}checked{% endif %}>
+                                    <label class="form-check-label" for="delivery_yes">Need delivery</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="requires_delivery"
+                                           id="delivery_no" value="0" checked {% if form.requires_delivery.value == "0" %}checked{% endif %}>
+                                    <label class="form-check-label" for="delivery_no">Pick up</label>
+                                </div>
+                            </div>
+                    
+                            <div class="col-md-12 mb-3" id="deliveryAddressContainer">
+                                <label for="id_delivery_address" class="form-label">Delivery address*: </label>
+                                <textarea class="form-control {% if form.delivery_address.errors %}is-invalid{% endif %}"
+                                          id="id_delivery_address"
+                                          name="delivery_address"
+                                          rows="2">{{ form.delivery_address.value|default_if_none:'' }}</textarea>
+                                {% for error in form.delivery_address.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                    
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Payment method: </label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="payment_on_get" value="0">
+                                    <label class="form-check-label">Credit card</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="payment_on_get" value="1" checked>
+                                    <label class="form-check-label">Cash</label>
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="container">
+                            <h3 class="text-center mb-4">Selected Products</h3>
+                            <div class="container" id="cart-items-container">
+                                {% user_carts request as carts %}
+                                {% include "carts/includes/included_cart.html" %}
+                            </div>
+                        </div>
                 </form>
+                    
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const orderForm = document.getElementById('create_order_form');
+                        const deliveryYes = document.getElementById('delivery_yes');
+                        const deliveryNo = document.getElementById('delivery_no');
+                        const deliveryContainer = document.getElementById('deliveryAddressContainer');
+                        const addressField = document.getElementById('id_delivery_address');
+                
+                        function toggleDelivery() {
+                            if (deliveryYes && deliveryYes.checked) {
+                                deliveryContainer.style.display = 'block';
+                            } else if (deliveryContainer) {
+                                deliveryContainer.style.display = 'none';
+                                if (addressField) addressField.value = '';
+                            }
+                        }
+                
+                        if (deliveryYes && deliveryNo) {
+                            deliveryYes.addEventListener('change', toggleDelivery);
+                            deliveryNo.addEventListener('change', toggleDelivery);
+                            toggleDelivery();
+                        }
+                
+                        function showNotification(message) {
+                            const oldNotify = document.getElementById('temp-notify');
+                            if (oldNotify) oldNotify.remove();
+                
+                            const notification = document.createElement('div');
+                            notification.id = 'temp-notify';
+                            notification.className = 'alert alert-success alert-dismissible fade show custom-shadow';
+                            notification.role = 'alert';
+                            
+                            Object.assign(notification.style, {
+                                position: 'fixed',
+                                top: '85px',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                zIndex: '9999',
+                                minWidth: '350px',
+                                textAlign: 'center',
+                                backgroundColor: '#d1e7dd', 
+                                borderColor: '#badbcc',
+                                color: '#0f5132',
+                                borderRadius: '12px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                            });
+                
+                            notification.innerHTML = `
+                                <strong class="me-2"> ${message} </strong>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            `;
+                
+                            document.body.appendChild(notification);
+                
+                            setTimeout(() => {
+                                notification.classList.remove('show');
+                                setTimeout(() => notification.remove(), 500);
+                            }, 4000);
+                        }
+                
+                        document.getElementById('submit_order_link').addEventListener('click', function(e){
+                            e.preventDefault();
+                            let isValid = true;
+                            let errorMessage = "Please fill in all required fields correctly.";
+                        
+                            orderForm.querySelectorAll('input[required], textarea[required]').forEach(field => {
+                                field.classList.remove('is-invalid');
+                                if(!field.value.trim()){
+                                    field.classList.add('is-invalid');
+                                    isValid = false;
+                                }
+                            });
+                        
+                            if (deliveryYes && deliveryYes.checked) {
+                                if (addressField && !addressField.value.trim()) {
+                                    addressField.classList.add('is-invalid');
+                                    isValid = false;
+
+                                    errorMessage = "Please fill in all required fields, including the delivery address.";
+                                }
+                            }
+                        
+                            if(isValid){
+                                orderForm.submit();
+                            } else {
+                                const firstError = orderForm.querySelector('.is-invalid');
+                                if(firstError) firstError.scrollIntoView({behavior:'smooth', block:'center'});
+                                
+                                showNotification(errorMessage);
+                            }
+                        });
+                    });
+                </script>
             </div>
         </div>
     </div>
-</div>         
+</div>
+
 {% endblock %}

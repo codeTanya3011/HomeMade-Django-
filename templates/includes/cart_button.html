@@ -3,9 +3,9 @@
 
 {% user_carts request as carts %}
 
-<div class="row position-fixed z-3">
+<div class="row position-relative z-3">
     <div class="dropdown">
-        <button type="button" class="btn dropdown-toggle d-flex fs-5 mb-3 mt-3 ms-5"
+        <button type="button" class="btn dropdown-toggle fs-5 ms-3"
             data-bs-target="exampleModal" data-bs-toggle="modal" id="modalButton" aria-expanded="false"
             style="width: 100px; height: 50px;">
             <img src="{% static 'deps/icons/cart-plus.svg' %}" alt="Catalog Icon" width="32" height="32">
@@ -21,10 +21,10 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <h3 class="text-center mb-4">Cart
-                    <img src="{% static 'deps/icons/cart-plus.svg' %}" alt="Catalog Icon" width="32" height="32">
+                <h3 class="text-center mb-3 ms-3 fs-2">Cart
+                    <img src="{% static 'deps/icons/cart-plus.svg' %}" alt="Catalog Icon" width="38" height="38">
                 </h3>
-                <div class="container" id="cart-items-container">
+                <div class="container cart-popup-mode" id="cart-items-container">
 
                    {% include "carts/includes/included_cart.html" %}
                    

@@ -24,16 +24,5 @@ class CartAdmin(admin.ModelAdmin):
     def product_display(self, obj):
         return str(obj.product.name)
 
-        # user_display and product_display alter name of columns in admin panel
     user_display.short_description = "Users"
     product_display.short_description = "Product"
-
-
-
-
-
-    # # user_display and product_display alter name of columns in admin panel
-    # user_display.short_description = "user"
-    # product_display.short_description = "product"
-
-
