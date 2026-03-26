@@ -18,33 +18,33 @@ from users.forms import ProfileForm, UserLoginForm, UserRegistrationForm
 class UserLoginView(LoginView):
     template_name = 'users/login.html'
     form_class = UserLoginForm
-    # success_url = reverse_lazy('main:index')
+
+    def form_valid(self, form):
+        # 1. Запоминаем анонимный ключ СЕЙЧАС, пока он не протух
+        session_key = self.request.session.session_key
+        
+        # 2. Логиним пользователя (стандартный метод Django)
+        auth.login(self.request, form.get_user())
+        
+        # 3. Теперь, когда юзер уже в системе (self.request.user обновлен)
+        user = self.request.user
+        
+        if session_key:
+            # Чистим старое, привязываем новое
+            Cart.objects.filter(user=user).delete()
+            Cart.objects.filter(session_key=session_key).update(user=user)
+        
+        messages.success(self.request, f"{user.username}, You are logged in!")
+
+        # 4. ВАЖНО: Возвращаем редирект вручную, не ломая логику super()
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
         redirect_page = self.request.POST.get('next', None)
         if redirect_page and redirect_page != reverse('user:logout'):
             return redirect_page
         return reverse_lazy('main:index')
-    
-    def form_valid(self, form):
-        session_key = self.request.session.session_key
-
-        user = form.get_user()
-
-        if user:
-            auth.login(self.request, user)
-            if session_key:
-                # delete old authorized user carts
-                forgot_carts = Cart.objects.filter(user=user)
-                if forgot_carts.exists():
-                    forgot_carts.delete()
-                # add new authorized user carts from anonimous session
-                Cart.objects.filter(session_key=session_key).update(user=user)
-
-                messages.success(self.request, f"{user.username}, You are logged in")
-
-                return HttpResponseRedirect(self.get_success_url())
-
+        
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Authorization'
@@ -57,19 +57,22 @@ class UserRegistrationView(CreateView):
     success_url = reverse_lazy('users:profile')
 
     def form_valid(self, form):
+        # 1. Сначала сохраняем анонимную сессию
         session_key = self.request.session.session_key
-        user = form.instance
+        
+        # 2. Сохраняем пользователя и логиним его
+        user = form.save()
+        auth.login(self.request, user)
 
-        if user:
-            form.save()
-            auth.login(self.request, user)
-
+        # 3. Переносим корзину
         if session_key:
             Cart.objects.filter(session_key=session_key).update(user=user)
 
-        messages.success(self.request, f"{user.username}, You have successfully registered and logged into your account.")
+        messages.success(self.request, f"{user.username}, You have successfully registered!")
+        
+        # 4. Всегда возвращаем редирект
         return HttpResponseRedirect(self.success_url)
-
+        
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Registration'

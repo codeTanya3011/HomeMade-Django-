@@ -1,55 +1,55 @@
 footer {
   position: fixed;
   bottom: 0;
-  width: 100%;
   background-color: #986e6e;
   padding: 10px 10px;
+  margin-top: auto; 
+  z-index: 1100; 
+  box-sizing: border-box;
 }
 
 .bg-custom {
-  height: 40px; /* Висота футера */
-  width: 100%;   /* Ширина на всю сторінку */
-  background-color: #2a1e1e; /* Колір фона */
-  color: #c3b2b2; /* Колір тексту */
+  height: 50px;
+  width: 100%; 
+  background-color: #2a1e1e;
+  color: #c3b2b2; 
   text-align: center;
-  box-sizing: border-box;
-  z-index: 101 !important;
 }
 
 .general-footer{
-  display: flex; /* Управління розташуванням */
-  justify-content: space-between;  /* Рівномірно на сторінці з отступами */
+  display: flex; /* location management */
+  justify-content: space-between;  /* evenly spaced on page with indents */
 }
 
 .icon_footer {
-  width: 22px;
-  height: 22px;
-  object-fit: contain; /* Зберігає пропорції */
-  transition: transform 0.5s ease; /* Плавний перехід */
+  width: 28px;
+  height: 28px;
+  object-fit: contain; /* maintains proportions */
+  transition: transform 0.5s ease;
 }
 
 .copy-right {
   display: flex; 
-  justify-content: center; /* Центруєм по горизонталі */
-  align-items: center; /* Центруєм по вертикалі */
+  justify-content: center;
+  align-items: center;
   color: #c3b2b2; 
-  font-size: 10px;
-  margin: 0; /* Зовнішні відступи */
-  padding: 0; /* Внутрішні відступи */
+  font-size: 12px;
+  margin: 0; /* external indents */
+  padding: 0; /* internal indents */
   text-align: center;
   height: 100%;
 }
 
 .privacy_terms a {
-  text-decoration: none; /* Мінус підкреслення */
+  text-decoration: none;
   color: #c3b2b2;
   transition: color 0.5s ease;
-  font-size: 12px; /* Розмір шрифта */
+  font-size: 16px;
 }
 
 .privacy_terms a:hover {
-  color: #85d8a7; /* Зміна кольору тексту при наведенні */
-  transform: scale(1.2); /* Збільшення при наведенні */
+  color: #85d8a7;
+  transform: scale(1.2); /* zoom on hover */
 }
 
 .icon_footer:hover {
@@ -65,40 +65,45 @@ footer {
 .information-pages {
   justify-content: center;
   align-items: center;
-  background-color: #e2c9c9; /* Фон */
+  background-color: #e2c9c9;
   padding: 20px 20px; 
-  border-radius: 15px; /* Заокруглення углів */
+  border-radius: 5px; /* rounding corners */
 }
 
 .information-pages h1 {
   color: #1e1010;
-  font-size: 2em; /* big текст */
-  border-bottom: 3px solid #986e6e; /* Підкреслювання */
-  padding-bottom: 5px; /* Відступ */
+  font-size: 2em; /* big text */
+  border-bottom: 3px solid #986e6e; /* emphasis */
+  padding-bottom: 20px;
 }
 
 .information-pages h2 {
   color: #2a1e1e;
   font-size: 1.6em;
-  padding-bottom: 5px;
+  padding: 15px;
+}
+
+.information-pages h4 {
+  color: #2a1e1e;
+  padding-top: 10px;
 }
 
 .information-pages p,
 .information-pages ul {
   font-size: 1.2em; 
   color: #402b2b;
-  list-style-type: disc; /* Маркери — крапки */
+  list-style-type: disc; /* markers - dots */
 }
 
 .information-pages ul li {
-  margin-bottom: 10px; /* Відстань між пунктами */
+  margin-bottom: 15px; /* distance between points */
 }
 
 .information-pages a {
   text-decoration: none;
   color: #2a1e1e;
   font-size: 1em;
-  padding-bottom: 5px;
+  padding-bottom: 15px;
 }
 
 .contact-info ul li {
@@ -119,7 +124,5 @@ footer {
 }
 
 .form-check {
-  color: #986e6e;
-  background-color: #402b2b;
+  color: #402b2b;
 }
-

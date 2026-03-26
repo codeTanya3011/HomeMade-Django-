@@ -1,22 +1,48 @@
 {% extends "base.html" %}
 {% load static %}
+{% load cache %}  {% load goods_tags %}
 
 {% block css %}
     <link rel="stylesheet" href="{% static "deps/css/my_footer_css.css" %}">
 {% endblock %}
 
-{% block modal_cart %}
-{% include "includes/cart_button.html" %}
-{% endblock modal_cart %}
+{% block nav_style %}background-color: transparent;{% endblock %}
+
+{% block catalog_button %}
+
+<div class="dropdown d-inline-block">
+    <button class="btn dropdown-toggle position-relative ms-3 fs-5" 
+            data-bs-toggle="dropdown" 
+            style="width: 130px; height: 50px;">
+        Catalog
+        <img class="catalog_item mx-1" src="{% static 'deps/icons/menu-catalog.svg' %}" width="28" height="28">
+    </button>
+    <ul class="dropdown-menu">
+        {% cache 60 catalog_categories %}
+        {% tag_categories as categories %}
+        {% for category in categories %} 
+            <li><a class="dropdown-item" href="{% url "catalog:index" category.slug %}">{{category.name}}</a></li>
+        {% endfor %}
+        {% endcache %}
+    </ul>
+</div>
+
+{% endblock catalog_button %}
+
+{% block modal_cart %}{% endblock %}
+
+{% block filters %}{% endblock %}
 
 {% block content %}
-    <h1 class="mt-5 pt-5 text-center fst-italic" style="color: #402b2b;"><strong>
-        <img class="catalog_item" src="{% static "deps/icons/sofa2.svg" %}" alt="Catalog Icon" width="60"
-            height="60">{{ content }}</strong></h1>
-{% endblock %}
 
-{% block footer %}
-    <div class="general-footer">
-        {% include "includes/footer.html" %}
+    <div class="container d-flex flex-column align-items-center justify-content-start text-center p-0">
+        <h1 class="fst-italic shadow-text" style="color: #402b2b; font-size: 3.5rem; margin-top: -10px;">
+            <strong>
+                <img src="{% static 'deps/icons/sofa2.svg' %}" width="80" height="80">
+                HomeMade
+            </strong>
+        </h1>
+        <p class="fs-4 text-muted">Welcome to our store!</p>
     </div>
+
 {% endblock %}

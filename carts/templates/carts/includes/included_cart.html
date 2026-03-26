@@ -1,69 +1,77 @@
 {% load static %}
 
-<div class="card mb-3 bg-light shadow-lg" style="color: #2a1e1e;">
-    {% for cart in carts %}
-        <div class="card-header float-center">
-            <h5 class="card-title">{{ cart.product.name }} ✏️</h5>
+
+{% for cart in carts %}
+<div class="cart-container text-center">
+    <hr style="border: 0; height: 3px; background: #986e6e; margin: 20px auto; width: 100%; opacity: 0.5;">
+    <h5 class="card-title fs-4 mb-3 mt-3">{{ cart.product.name }} 
+    <img src="{% static 'deps/icons/pencil.svg' %}" alt="Logo" width="25" height="25"></h5>
+
+    <ul class="list-group list-group-flush">
+    <li class="list-group-item">
+        <div class="row align-items-center justify-content-between text-center mx-0">
+            
+            <div class="col-auto p-0 cart-control-wrapper">
+                <div class="input-group d-flex flex-column">
+                    <input type="text" class="form-control number cart-quantity-input fs-5 d-flex gap-1" 
+                            value="{{ cart.quantity }}" readonly>
+                    
+                    <div class="cart-buttons-row d-flex">
+                        <button type="button" class="btn decrement cart-btn"
+                                data-cart-id="{{ cart.id }}"
+                                data-cart-change-url="{% url 'carts:cart_change' %}">
+                            {% csrf_token %}➖
+                        </button>
+                        
+                        <button type="button" class="btn increment cart-btn"
+                                data-cart-id="{{ cart.id }}"
+                                data-cart-change-url="{% url 'carts:cart_change' %}">
+                            {% csrf_token %}➕
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-auto fs-5">
+                <p class="mb-0">
+                    <strong class="cart-item-price">Price: {{ cart.product.sell_price }} UAH</strong>
+                </p>
+            </div>
+
+            <div class="col-auto">
+                <a href="{% url 'carts:cart_remove' %}" 
+                    class="remove-from-cart" 
+                    data-cart-id="{{ cart.id }}" 
+                    data-remove-url="{% url 'carts:cart_remove' %}">
+                    {% csrf_token %}
+                    <svg width="38" height="38" viewBox="0 0 16 16" fill="#85d8a7" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>    
+        </li>
+    </ul>
+
+{% endfor %}
+
+    <hr style="border: 0; height: 3px; background: #986e6e; margin: 20px auto; width: 100%; opacity: 0.5;">
+    <div class="cart-container">
+        <div class="card-footer text-center mb-3 mt-3" style="color: #402b2b;">
+            <p class="float-left fs-5">Total <strong id="total-quantity">{{ carts.total_quantity }}</strong> Item(s) worth</p>
+            <hr style="border: 0; height: 2px; background: #986e6e; margin: 20px auto; width: 50%; opacity: 0.5;">
+            <h4 class="float-left fs-5"><strong id="total-price">{{ carts.total_price }} UAH</strong></h4>
         </div>
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-                <div class="row text-center">
-                    <div class="col p-0 ms-3">
-                        <div class="input-group mx-1">
-                            <input type="text" class="form-control number fs-5" style="width: 100%; text-align: center; border-radius: 5px;" value="{{ cart.quantity }}"
-                                readonly>
-                            <button type="button" class="input-group-btn custom-btn decrement ms-2 fs-5"
-                                style="border-radius: 5px; text-align: center; display: inline-flex; justify-content: center; align-items: center;" 
-                                data-cart-id="{{ cart.id }}"
-                                data-cart-change-url="{% url 'carts:cart_change' %}">
-                                {% csrf_token %}
-                                -
-                            </button>
-                            <button type="button" class="input-group-btn custom-btn increment fs-5"
-                                style="border-radius: 5px; text-align: center; display: inline-flex; justify-content: center; align-items: center;"
-                                data-cart-id="{{ cart.id }}"
-                                data-cart-change-url="{% url 'carts:cart_change' %}">
-                                {% csrf_token %}
-                                +
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col p-0">
-                        <p class="col p-0 d-flex align-items-center ms-5">
-                            <strong class="cart-item-price">Price: {{ cart.product.sell_price }} UAH</strong>
-                        </p>
-                    </div>
-                    <div class="cart-item col p-0">
-                        <a href="{% url 'carts:cart_remove' %}" 
-                           class="remove-from-cart" 
-                           data-cart-id="{{ cart.id }}" 
-                           data-remove-url="{% url 'carts:cart_remove' %}">
-                            {% csrf_token %}
-                            <svg class="mx-1" width="28" height="28" viewBox="0 0 16 16" fill="#85d8a7" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
-                            </svg>
-                        </a>
-                    </div>
-                </div>    
-            </li>
-        </ul>
-    {% endfor %}
-    
-</div>
-<div class="card mb-3 shadow-lg">
-    <div class="card-footer text-center mb-4" style="color: #402b2b;">
-        <p class="float-left">Total <strong id="total-quantity">{{ carts.total_quantity }}</strong> Item(s) worth</p>
-        <h4 class="float-left"><strong id="total-price">{{ carts.total_price }} UAH</strong></h4>
+    </div>
+
+    <div class="text-center">
+        <a  id="submit_order_link"
+            class="btn dropdown-toggle fs-5 mb-3 mt-3" 
+            type="button" 
+            href="{% url "orders:create_order" %}">
+            Place an order 
+            <img class="catalog_item" src="{% static "deps/icons/check-mark.svg" %}" alt="Catalog Icon"
+            width="28" height="28">
+        </a>
     </div>
 </div>
-
-<div class="text-center mb-4">
-    <a class="btn dropdown-toggle fs-5" 
-        type="button" 
-        href="{% url "orders:create_order" %}">
-        Place an order 
-        <img class="catalog_item" src="{% static "deps/icons/check-mark.svg" %}" alt="Catalog Icon"
-        width="28" height="28">
-    </a>
-</div>
-

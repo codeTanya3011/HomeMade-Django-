@@ -7,12 +7,12 @@
 
 {% block content %}
 
-<div class="text-center ms-5">
-<div class="information-pages ms-5 mb-3">
+<div class="text-center">
+<div class="information-pages">
     <h1>Terms and Conditions</h1>
-    <p>This is the Terms and Conditions page for HomeMade</p>
+    <p>This is the Terms and Conditions page for <strong><a href="{% url 'main:index' %}" style="color: #327d50;">HomeMade</a></strong></p>
     <h2>1. Introduction</h2>
-    <p>Welcome to HomeMade! These Terms and Conditions govern your use of our website <strong><a href="{% url 'main:index' %}" style="color: #327d50;">HomeMade</a></strong> and the purchase of our products. By accessing or using our website, you agree to these Terms in full. If you do not agree to these Terms, you must not use our website.</p>
+    <p>Welcome to HomeMade! These Terms and Conditions govern your use of our website HomeMade and the purchase of our products. By accessing or using our website, you agree to these Terms in full. If you do not agree to these Terms, you must not use our website.</p>
     <h2>2. Eligibility</h2>
     <p>To use this website and place orders, you must be at least 18 years old or have the consent of a parent or legal guardian. You must provide accurate and up-to-date information during registration or checkout.</p>
     <h2>3. Ordering and Payment</h2>
@@ -35,5 +35,5 @@
         </div>
 </div>
 </div>
-{% endblock %}
 
+{% endblock %}

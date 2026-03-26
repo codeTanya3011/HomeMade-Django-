@@ -7,10 +7,10 @@
 
 {% user_carts request as carts %}
 <div class="row">
-    <div class="container mt-5">
+    <div class="container">
         <div class="row">
             <div class="col-md-5">
-                <div class="bg-light p-4 mb-4 mx-2 rounded custom-shadow ms-5">
+                <div class="bg-light p-4 mb-3 mx-2 me-2 rounded custom-shadow">
                     <h3 class="text-center mb-4" style="color: #402b2b;">User profile</h3>
                     <form action="{% url "users:profile" %}" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
@@ -18,22 +18,31 @@
                             <div class="col-md-12 mb-3 text-center">
                                 {% if user.image %}
                                     <img src="{{ user.image.url }}"
-                                        alt="Avatar" class="img-fluid rounded-circle"
-                                        style="max-width: 200px;">
+                                        alt="Avatar" 
+                                        class="img-fluid rounded-3 custom-avatar"
+                                        style="width: 250px; height: 250px; object-fit: cover; border: 2px solid #c3b2b2;">
                                 {% else %}
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <img class="catalog_item ms-1" src="{% static "deps/icons/profile-female.svg" %}" alt="Catalog Icon"
-                                         style="max-width: 50%; max-height: 50%; width: auto; height: auto;">
-                                    <img class="catalog_item me-1" src="{% static "deps/icons/profile-male.svg" %}" alt="Catalog Icon"
-                                         style="max-width: 50%; max-height: 50%; width: auto; height: auto;">
-                                </div>
+                                    <div style="display: flex; gap: 10px; align-items: center; justify-content: center;">
+                                        <img class="catalog_item ms-1" src="{% static 'deps/icons/profile-female.svg' %}" 
+                                             alt="Avatar" style="max-width: 50%; max-height: 50%; width: auto; height: auto;">
+                                        <img class="catalog_item me-1" src="{% static 'deps/icons/profile-male.svg' %}" 
+                                             alt="Avatar" style="max-width: 50%; max-height: 50%; width: auto; height: auto;">
+                                    </div>
                                 {% endif %}
-                                <input type="file" class="form-control mt-3" id="id_image"
-                                    name='image'
-                                    accept="image/*">
-                                    {% if form.image.errors %}
+
+                                <div class="mt-3">
+                                    <label for="id_image" class="btn btn-outline-success" style="cursor: pointer; color: #402b2b; border-color: #c3b2b2;">
+                                        Choose image...
+                                    </label>
+                                    <input type="file" name="image" id="id_image" class="form-control" 
+                                           accept="image/*" style="display: none;">
+                                    
+                                    <p id="file-name" class="small mt-1" style="color: #c3b2b2;">No file chosen</p>
+                                </div>
+
+                                {% if form.image.errors %}
                                     <div class="alert alert-danger alert-dismissible fade show">{{form.image.errors}}</div>
-                                    {% endif %}
+                                {% endif %}
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="id_first_name" class="form-label">Name*</label>
@@ -80,9 +89,8 @@
                                     {% endif %}
                             </div>
                         </div>
-                        <div class="text-center mb-4">
-                            <button class="btn dropdown-toggle fs-5 w-100 mt-5"
-                                style="width: 100%;"
+                        <div class="text-center mb-3">
+                            <button class="btn dropdown-toggle fs-5 mt-3"
                                 type="submit" 
                                 aria-expanded="false">
                                 Save 
@@ -95,7 +103,7 @@
             </div>
             {% user_carts request as carts %}
             <div class="col-md-7">
-                <div class="bg-light p-4 mb-4 mx-2 rounded custom-shadow">
+                <div class="bg-light p-4 rounded custom-shadow">
                     <h3 class="text-center mb-4" style="color: #402b2b;">Cart
                         <img src="{% static 'deps/icons/cart-plus.svg' %}" alt="Catalog Icon" width="32" height="32">
                     </h3>
@@ -106,56 +114,93 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-12">
-                <div class="bg-light p-4 mb-4 mx-2 rounded custom-shadow ms-5">
-                    <h3 class="text-center mb-4" style="color: #402b2b;">My orders</h3>
-                    <!-- Замовлення -->
-                    <div class="container">
-                        <div class="accordion" id="accordionExample">
-                            {% for order in orders %}
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="heading{{ order.id }}">
-                                    <button class="my-accordion-btn ps-3 {% if order != orders.0 %}collapsed{% endif %}" 
-                                    type="button" 
-                                    data-toggle="collapse" 
-                                    data-target="#collapse{{ order.id }}" 
-                                    aria-expanded="{% if order == orders.0 %}true{% else %}false{% endif %}" 
-                                    aria-controls="collapse{{ order.id }}">
-                                Order № {{ order.id }} - {{ order.created_timestamp }} | 
-                                Status: <strong class="order-status ps-3">{{ order.status }}</strong>
-                            </button>
-                                </h2>
-                                <div id="collapse{{ order.id }}" class="accordion-collapse collapse {% if order == orders.0 %}show{% endif %}" aria-labelledby="heading{{ order.id }}" data-bs-parent="#accordionExample">
-                                    <div class="order-details">
-                                        <table class="custom-table">
-                                            <thead>
-                                                <tr>
-                                                    <th class="ps-3">Product</th>
-                                                    <th>Quantity</th>
-                                                    <th>Price</th>
-                                                    <th>Total cost</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for item in order.orderitem_set.all %}
-                                                <tr>
-                                                    <td><a class="custom-link ps-3" href="{% url 'goods:product' product_slug=item.product.slug %}">{{ item.product.name }}</a></td>
-                                                    <td>{{ item.quantity }}</td>
-                                                    <td>{{ item.price }}</td>
-                                                    <td>{{ item.products_price }}</td>                                                   
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
+            
+        </div>
+    </div>
+</div>
+
+<div class="col-md-12 mt-3">
+    <div class="bg-light p-4 rounded custom-shadow border-0 mb-3 mt-3 me-3">
+        <h3 class="text-center pb-3" style="color: #402b2b; font-weight: 600;">My orders</h3>
+        
+        <div class="accordion custom-order" id="accordionExample">
+            {% for order in orders %}
+            <div class="accordion-item mb-3 border-0 shadow-sm">
+                <h2 class="accordion-header" id="heading{{ order.id }}">
+                    <button class="my-accordion-btn ps-3 {% if not forloop.first %}collapsed{% endif %}" 
+                            type="button" 
+                            data-bs-toggle="collapse" 
+                            data-bs-target="#collapse{{ order.id }}" 
+                            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" 
+                            aria-controls="collapse{{ order.id }}">
+                        <div class="d-flex justify-content-between w-100 me-3">
+                            <img class="catalog_item mx-1" src="{% static 'deps/icons/arrow-up-arrow-down.svg' %}" alt="Filters" width="28" height="28">
+                            <span> Order № {{ order.id }} <span class="ms-2">| {{ order.created_timestamp|date:"d.m.Y H:i" }}</span></span>
+                            <span>Status: 
+                                <strong class="order-status-text" style="color: #096740;">
+                                    {{ order.status }}
+                                </strong>
+                            </span>
+                        </div>
+                    </button>
+                </h2>
+                <div id="collapse{{ order.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
+                    aria-labelledby="heading{{ order.id }}" data-bs-parent="#accordionExample">
+                    <div class="accordion-body p-0">
+                        <div class="table-responsive">
+                            <table class="table custom-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">Product</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in order.orderitem_set.all %}
+                                    <tr>
+                                        <td class="ps-4">
+                                            {% if item.product %}
+                                                <a class="custom-link" href="{% url 'goods:product' item.product.slug %}">
+                                                    {{ item.product.name }}
+                                                </a>
+                                            {% else %}
+                                                <span>{{ item.name }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>{{ item.price }} UAH</td>
+                                        <td><strong>{{ item.products_price }} UAH</strong></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr class="order-total-row">
+                                        <td colspan="3" class="text-end ps-3"><strong>Total for order:</strong></td>
+                                        <td class="total-amount"><strong>{{ order.total_price }} UAH</strong></td> 
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('id_image').onchange = function () {
+        const fileName = this.files[0] ? this.files[0].name : "No file chosen";
+        document.getElementById('file-name').textContent = fileName;
+    };
+</script>
 {% endblock  %}
+
+{% block footer %}
+    <div class="general-footer">
+        {% include "includes/footer.html" %}
+    </div>
+{% endblock %}

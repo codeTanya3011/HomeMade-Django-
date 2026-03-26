@@ -2,33 +2,32 @@ import os
 from django.core.management import call_command
 
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
 
 import django
+
 django.setup()
 
-print("Починаю експорт даних...")
+print("I'm starting data export...")
 
-# Шляхи до файлів фікстур
-categories_path = os.path.join(os.getcwd(), 'fixtures', 'goods', 'categories.json')
-products_path = os.path.join(os.getcwd(), 'fixtures', 'goods', 'products.json')
+# Ways to files of fixtures
+categories_path = os.path.join(os.getcwd(), "fixtures", "goods", "categories.json")
+products_path = os.path.join(os.getcwd(), "fixtures", "goods", "products.json")
 
-# Створюємо fixtures/goods, якщо немає
+# Create fixtures/goods, because there is no
 os.makedirs(os.path.dirname(categories_path), exist_ok=True)
 
 try:
-    # Експорт goods.Categories/Products в файл
-    with open(categories_path, 'w', encoding='utf-8') as file:
-        call_command('dumpdata', 'goods.Categories', indent=4, stdout=file)
-    print(f"Дані з goods.Categories успішно збережені в {categories_path}")
+    # Export goods.Categories/Products to a file
+    with open(categories_path, "w", encoding="utf-8") as file:
+        call_command("dumpdata", "goods.Categories", indent=4, stdout=file)
+    print(f"Data from goods.Categories successfully saved in {categories_path}")
 except Exception as e:
-    print(f"Помилка при збереженні goods.Categories: {e}")
+    print(f"Merchandise while saving goods.Categories: {e}")
 
 try:
-    with open(products_path, 'w', encoding='utf-8') as file:
-        call_command('dumpdata', 'goods.Products', indent=4, stdout=file)
-    print(f"Дані з goods.Products успішно збережені в {products_path}")
+    with open(products_path, "w", encoding="utf-8") as file:
+        call_command("dumpdata", "goods.Products", indent=4, stdout=file)
+    print(f"Data from goods.Products are successfully saved in {products_path}")
 except Exception as e:
-    print(f"Помилка при збереженні goods.Products: {e}")
-
-
+    print(f"Waiver while saving goods.Products: {e}")
