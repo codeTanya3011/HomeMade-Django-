@@ -1,8 +1,9 @@
 # 🏠 HomeMade — Full-Stack E-commerce Platform
 
-**HomeMade** is a high-performance, production-ready e-commerce web application. It is designed to provide a seamless shopping experience for home goods, featuring a robust Django backend, interactive AJAX-driven frontend, and a containerized infrastructure for stable server deployment.
+**HomeMade** is a full-stack e-commerce web application built with Django. It is designed to provide a seamless shopping experience for home goods, featuring a robust Django backend, interactive AJAX-driven frontend, and a containerized infrastructure for stable server deployment.
 
 ## 🚀 Live Demo & Deployment
+🌐 Live Demo: https://store.tanya-dev.help/
 * **Status:** Deployed and Production-ready.
 * **Environment:** Containerized via Docker & Orchestrated with Docker Compose.
 * **Web Server:** Nginx (Reverse Proxy & Static/Media Serving).
@@ -11,7 +12,7 @@
 ## ✨ Key Functional Highlights
 * **Dynamic Catalog (Goods):** High-speed product listing with Redis-backed caching for instant category transitions.
 * **Smart User Profiles (Users):** Registration with unique constraints and customizable avatars using automated square cropping and scaling.
-* **Real-Time Cart (Cards):** AJAX-powered shopping cart allowing users to modify items without page refreshes.
+* **Real-Time Cart:** AJAX-powered shopping cart allowing users to modify items without page refreshes.
 * **Adaptive Checkout (Orders):** Intelligent form validation that toggles required fields (Phone/Address) based on Shipping vs. Pickup selection.
 * **Modern UI/UX:** Interactive custom notifications ("Ready!" / "Wait!") and responsive Bootstrap 5 layout.
 
@@ -27,41 +28,58 @@
 * `app/` — Main configuration and settings core.
 * `users/`, `goods/`, `orders/`, `cards/` — Decoupled functional micro-apps.
 * `common/` — Reusable architectural Mixins (Cache, Permissions).
-* `fixtures/` — JSON datasets for rapid environment synchronization.
+* `fixtures/` — Preloaded JSON data for quick project setup (categories & products).
 * `static/` & `media/` — Distributed asset management.
 
-## 🐋 Deployment via Docker
+🧪 Local Development
+To run the project locally for development:
 
-The application is fully containerized. To launch the entire production environment:
-
-1. **Clone the project:**
-   ```bash
-   git clone ...
-   cd homemade
-
-2. Create and activate a virtual environment:
-
+# Clone the repository
+```
+git clone ...
+cd homemade
+```
+# Create virtual environment
+```
 python -m venv venv
+```
+# Activate venv
 # Windows:
 venv\Scripts\activate
 # macOS/Linux:
 source venv/bin/activate
 
-3. Install dependencies:
+# Install dependencies
+```
 pip install -r requirements.txt
-
-4. Apply migrations:
+```
+# Apply migrations
+```
 python manage.py migrate
-
-5. Import product data (Fixtures):
+```
+# Load fixtures
+```
 python manage.py loaddata fixtures/goods/categories.json
 python manage.py loaddata fixtures/goods/products.json
-
-6. Run the development server:
+```
+# Run development server
+```
 python manage.py runserver
+```
+🐋 Production Deployment (Docker)
+To run the full production environment using Docker:
+```
+docker-compose up --build
+```
+The application is containerized with:
 
-🐋 Containerization
-This project is being prepared for Docker deployment. A Dockerfile and docker-compose.yml are currently under development to manage Django, PostgreSQL, and Redis services.
+- Django (Gunicorn)
+- PostgreSQL
+- Redis
+- Nginx (reverse proxy & static/media serving)
+
+Environment variables are configured via a .env file.
+This setup mirrors a real-world production environment.
 
 ---
 
@@ -70,5 +88,3 @@ This project is being prepared for Docker deployment. A Dockerfile and docker-co
 * **AJAX Highlight:** Mentioning that your cart uses AJAX without page reloads shows that you care about User Experience (UX).
 * **Smart Cropping:** I included the part about the avatars we fixed today—it shows you pay attention to visual details.
 * **Clear Logic:** The structure section explains exactly what each folder does, which is great for anyone looking at your code for the first time.
-
-**Would you like me to add a "Contact" section at the end with your Gmail link so people can reach out to you directly from GitHub?**
